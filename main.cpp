@@ -56,11 +56,11 @@ static void do_sleep_until(const string &timepoint)
     smatch sm;
     if (!regex_match(timepoint, sm, reg_timepoint))
         throw runtime_error("Invalid timepoint string \"" + timepoint + "\"!");
-    int hour{stoi(sm[1].str())};
+    int hour_then{stoi(sm[1].str())};
     string _min{sm[3].str()};
     string _sec(sm[5].str());
-    int min{_min.empty() ? 0 : stoi(_min)};
-    int sec{_sec.empty() ? 0 : stoi(_sec)};
+    int min_then{_min.empty() ? 0 : stoi(_min)};
+    int sec_then{_sec.empty() ? 0 : stoi(_sec)};
     auto now{chrono::system_clock::now()};
     const time_t tt{chrono::system_clock::to_time_t(now)};
     struct tm tm_now;
@@ -70,12 +70,15 @@ static void do_sleep_until(const string &timepoint)
     localtime_r(&tt, &tm_now);
 #endif
     struct tm tm_then{tm_now};
-    tm_then.tm_hour = hour;
-    tm_then.tm_min  = min;
-    tm_then.tm_sec  = sec;
+    tm_then.tm_hour = hour_then;
+    tm_then.tm_min  = min_then;
+    tm_then.tm_sec  = sec_then;
     std::time_t _then{mktime(&tm_then)};
     auto then{chrono::system_clock::from_time_t(_then)};
-    if (!((hour > tm_now.tm_hour) || (min > tm_now.tm_min) || (sec > tm_now.tm_sec))) {
+    if (!((hour_then >  tm_now.tm_hour) ||
+         ((hour_then == tm_now.tm_hour) && (min_then >  tm_now.tm_min)) ||
+         ((hour_then == tm_now.tm_hour) && (min_then == tm_now.tm_min) && (sec_then > tm_now.tm_sec))))
+    {
         then += chrono::days(1);
     }
     if (verbose) {
