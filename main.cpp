@@ -79,7 +79,8 @@ static void do_sleep_until(const string &timepoint)
          ((hour_then == tm_now.tm_hour) && (min_then >  tm_now.tm_min)) ||
          ((hour_then == tm_now.tm_hour) && (min_then == tm_now.tm_min) && (sec_then > tm_now.tm_sec))))
     {
-        then += chrono::days(1);
+        typedef std::chrono::duration<int,std::ratio<60*60*24>> days_t;
+        then += days_t(1);
     }
     if (verbose) {
         const time_t tt_then{chrono::system_clock::to_time_t(then)};
